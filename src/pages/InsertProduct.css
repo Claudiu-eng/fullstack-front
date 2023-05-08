@@ -1,0 +1,64 @@
+
+
+.container{
+
+    background-color: white;
+}
+
+.form-label{
+    color: black;
+    background-color: yellow;
+    font-size: large;
+}
+
+
+
+input{
+    font-size: 123px;
+}
+
+.row{
+    background-color: white;
+}
+
+#screen{
+    background-color:yellow
+}
+
+#button {
+    font-size: 15px;
+    width: 6.667em;
+    height: 1.667em;
+    background-color: blue;
+    border: none;
+    color: white;
+    margin-bottom: 1.333em;
+    font-family: Raleway;
+    font-weight: bold;
+    padding-bottom: 1.667em;
+    padding-top: 0.267em;
+    margin-left: 30px;
+    margin-right: 30px;
+    border-radius: 6px;
+    transition: background .5s;
+    -webkit-transition: background .5s;
+  }
+
+#button-cancel{
+    font-size: 15px;
+    width: 6.667em;
+    height: 1.667em;
+    background-color: red;
+    border: none;
+    color: white;
+    margin-bottom: 1.333em;
+    font-family: Raleway;
+    font-weight: bold;
+    padding-bottom: 1.667em;
+    padding-top: 0.267em;
+    margin-left: 30px;
+    margin-right: 30px;
+    border-radius: 6px;
+    transition: background .5s;
+    -webkit-transition: background .5s;
+}
