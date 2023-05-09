@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./CustomerPage.css";
+import { saveAs } from "file-saver";
 
 const CustomerPage = () => {
   const [seeProducts, setSeeProducts] = useState(false);
@@ -20,6 +21,7 @@ const CustomerPage = () => {
   const [reviews, setReviews] = useState([]);
   const [reviews2, setReviews2] = useState([]);
   const [personalReviewsProducts, setPersonalReviewsProducts] = useState([]);
+  const [xmlButton, setXMLButton] = useState(false);
 
   const [review, setReview] = useState({
     numberOfStars: "",
@@ -79,7 +81,6 @@ const CustomerPage = () => {
 
     setText("");
     setNumber("");
-    
   };
 
   const loadShoppingCart = async () => {
@@ -103,8 +104,6 @@ const CustomerPage = () => {
     );
     setReviews(result.data);
   };
-
-
 
   useEffect(() => {
     loadProducts();
@@ -143,13 +142,13 @@ const CustomerPage = () => {
       categories: selectedBrands,
     };
 
-    console.log(data); 
+    setXMLButton(true);
 
     const result = await axios.post(
-      "http://localhost:8070/product_page/filter_products",data
+      "http://localhost:8070/product_page/filter_products",
+      data
     );
     setProducts(result.data);
-
   };
 
   const loadProductsSearched = async () => {
@@ -177,7 +176,9 @@ const CustomerPage = () => {
   };
 
   const logOut = (e) => {
-    const result = axios.post("http://localhost:8070/logIn/logOut/"+userConnected.email);
+    const result = axios.post(
+      "http://localhost:8070/logIn/logOut/" + userConnected.email
+    );
     setUserConected({
       firstName: "",
       lastName: "",
@@ -222,11 +223,13 @@ const CustomerPage = () => {
     setSeeOrders(false);
     setSeeReviewProduct(false);
     setSeePersonalReviews(false);
+    setXMLButton(false);
     loadProducts();
   };
 
   const manageShoppingCart = (e) => {
     setSeeShoppingCart(true);
+    setXMLButton(false);
     setSeeReviewProduct(false);
     setSeeOrders(false);
     setSeeProducts(false);
@@ -236,6 +239,7 @@ const CustomerPage = () => {
 
   const manageOrders = (e) => {
     setSeeShoppingCart(false);
+    setXMLButton(false);
     setSeePersonalReviews(false);
     setSeeReviewProduct(false);
     setSeeProducts(false);
@@ -248,6 +252,7 @@ const CustomerPage = () => {
     setSeeReviewProduct(false);
     setSeeProducts(false);
     setSeeOrders(false);
+    setXMLButton(false);
     setSeePersonalReviews(true);
     loadPersonalReviews();
   };
@@ -256,17 +261,19 @@ const CustomerPage = () => {
     setSeeProducts(true);
     setSeeShoppingCart(false);
     setSeeOrders(false);
+    setXMLButton(false);
     setSeeReviewProduct(false);
     setSeePersonalReviews(false);
     loadProductsFiltered();
   };
-  
+
   const searchProducts = (e) => {
     setSeeProducts(true);
     setSeeShoppingCart(false);
     setSeeOrders(false);
     setSeeReviewProduct(false);
     setSeePersonalReviews(false);
+    setXMLButton(false);
     loadProductsSearched();
   };
 
@@ -297,6 +304,18 @@ const CustomerPage = () => {
         prevSelectedBrands.filter((brand) => brand !== value)
       );
     }
+  };
+
+  const generateXML = async (e) => {
+    const response =await axios.post(
+      "http://localhost:8070/client_page/generate_xml" ,
+      products
+    );
+
+    let typeForBlob = "text/xml;charset=utf-8";
+    let blob = new Blob([response.data], { type: typeForBlob });
+    saveAs(blob, "owner-data.xml");
+    setXMLButton(false);
   };
 
   return (
@@ -349,13 +368,23 @@ const CustomerPage = () => {
                   Filter
                 </a>
               </li>
+              {xmlButton ? (
+                <li className="write">
+                  <a
+                    onClick={(e) => {
+                      generateXML(e);
+                    }}
+                  >
+                    See XML
+                  </a>
+                </li>
+              ) : null}
               <li className="logout warn">
                 <a onClick={(e) => logOut(e)}>Log Out</a>
               </li>
             </ul>
 
             {seeProducts ? (
-              
               <div className="checkbox-container-wrapper">
                 <h4>Prices</h4>
                 <div className="checkbox-container">
@@ -390,20 +419,19 @@ const CustomerPage = () => {
 
             {seeProducts ? (
               <div className="checkbox-container-wrapper">
-              <h4>Categories</h4>
-              {categories.map((categ) => (
-                <div className="checkbox-container" key={categ.id}>
-                  <input
-                    className="checkbox-input"
-                    type="checkbox"
-                    value={categ.id}
-                    onChange={handleCategoryCheckboxChange}
-                  />
-                  <label className="checkbox-label">{categ.name}</label>
-                </div>
-              ))}
-            </div>
-            
+                <h4>Categories</h4>
+                {categories.map((categ) => (
+                  <div className="checkbox-container" key={categ.id}>
+                    <input
+                      className="checkbox-input"
+                      type="checkbox"
+                      value={categ.id}
+                      onChange={handleCategoryCheckboxChange}
+                    />
+                    <label className="checkbox-label">{categ.name}</label>
+                  </div>
+                ))}
+              </div>
             ) : null}
           </nav>
 
