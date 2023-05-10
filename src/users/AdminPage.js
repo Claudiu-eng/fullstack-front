@@ -14,7 +14,9 @@ const AdminPage = () => {
   const [totalNo, setTotalNo] = useState();
   const [seeActivity, setSeeActivity] = useState(false);
   const [loginS, setLoginS] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
   const [logoutS, setLogoutS] = useState([]);
+  const [emailSearched, setEmailSearched] = useState("");
   const [userSelected, setUserSelected] = useState({
     id: 0,
     firstName: "",
@@ -23,6 +25,21 @@ const AdminPage = () => {
     numberOfTelephone: "",
     userType: "guest",
   });
+
+  const [checkboxValues, setCheckboxValues] = useState({
+    Employee: false,
+    Customer: false,
+    Admin: false
+  });
+
+  // Function to reset checkboxes
+  const resetCheckboxes = () => {
+    setCheckboxValues({
+      Employee: false,
+      Customer: false,
+      Admin: false
+    });
+  };
 
   const [userConnected, setUserConected] = useState({
     id: 0,
@@ -41,6 +58,23 @@ const AdminPage = () => {
     const result = await axios.get(
       "http://localhost:8070/admin_page/see_users"
     );
+    setUsers(result.data);
+  };
+
+  const searchUser = async (e) => {
+    const data = {
+      email: emailSearched,
+      roles: selectedRoles,
+    };
+    console.log(selectedRoles);
+    console.log(emailSearched);
+
+    setSelectedRoles([]);
+ 
+    const result = await axios.post(
+      "http://localhost:8070/user_page/search_user",data
+    );
+    
     setUsers(result.data);
   };
 
@@ -65,18 +99,35 @@ const AdminPage = () => {
     if (loggedInUser) {
       const foundUser = JSON.parse(loggedInUser);
       setUserConected(foundUser);
-      console.log(foundUser);
+      
     }
   };
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+
+  const onInputChangeSearch = (e) => {
+    const { name, value } = e.target;
+
+    setEmailSearched(value);
+  };
+
+  const handleRoleCheckboxChange = (event) => {
+    const { value, checked } = event.target;
+
+    if (checked) {
+      setSelectedRoles((prevSelectedRoles) => [...prevSelectedRoles, value]);
+    } else {
+      setSelectedRoles((prevSelectedRoles) =>
+      prevSelectedRoles.filter((role) => role !== value)
+      );
+    }
+
+  };
 
   const manageUsers = (e) => {
     setSeeUsers(true);
     setSeeNoOfTotalConnectedUsers(false);
     setSeeActivity(false);
+    loadUsers();
   };
 
   const seeTotalUserConnected = (e) => {
@@ -98,7 +149,6 @@ const AdminPage = () => {
     );
     setLoginS(result.data.logInS);
     setLogoutS(result.data.logOutS);
-
   };
 
   const logOut = (e) => {
@@ -151,10 +201,49 @@ const AdminPage = () => {
                   See total no Of connected users
                 </a>
               </li>
+
+              {seeUsers ? (
+                <li className="users">
+                  <a onClick={(e) => searchUser(e)}>Search user</a>
+                </li>
+              ) : null}
               <li className="logout warn">
                 <a onClick={(e) => logOut(e)}>Log Out</a>
               </li>
             </ul>
+
+            {seeUsers ? (
+              <div className="checkbox-container-wrapper">
+                <h4>Prices</h4>
+                <div className="checkbox-container">
+                  <input
+                    className="checkbox-input"
+                    type="checkbox"
+                    value="Employee"
+                    onChange={handleRoleCheckboxChange}
+                  />
+                  <label className="checkbox-label">Employee</label>
+                </div>
+                <div className="checkbox-container">
+                  <input
+                    className="checkbox-input"
+                    type="checkbox"
+                    value="Customer"
+                    onChange={handleRoleCheckboxChange}
+                  />
+                  <label className="checkbox-label">Customer</label>
+                </div>
+                <div className="checkbox-container">
+                  <input
+                    className="checkbox-input"
+                    type="checkbox"
+                    value="Admin"
+                    onChange={handleRoleCheckboxChange}
+                  />
+                  <label className="checkbox-label">Admin</label>
+                </div>
+              </div>
+            ) : null}
           </nav>
 
           {seeNoOfTotalConnectedUsers ? (
@@ -187,23 +276,22 @@ const AdminPage = () => {
                     </tbody>
                   </table>
 
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Date LogIn</th>
-                          <th>Date LogOut</th>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date LogIn</th>
+                        <th>Date LogOut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loginS.map((timeIn, index) => (
+                        <tr key={index}>
+                          <td>{timeIn}</td>
+                          <td>{logoutS[index]}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {loginS.map((timeIn, index) => (
-                          <tr key={index}>
-                            <td>{timeIn}</td>
-                            <td>{logoutS[index]}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-
+                      ))}
+                    </tbody>
+                  </table>
                 </section>
               </main>
             </div>
@@ -211,6 +299,21 @@ const AdminPage = () => {
 
           {seeUsers ? (
             <div>
+              <div className="input-container">
+                <label htmlFor="Name" className="form-label">
+                  Email
+                </label>
+                <input
+                  type={"text"}
+                  minLength="1"
+                  maxLength="100"
+                  required
+                  placeholder="Enter email"
+                  value={emailSearched}
+                  name="emailSearched"
+                  onChange={onInputChangeSearch}
+                ></input>
+              </div>
               <main role="main">
                 <section className="panel important">
                   <h1>All users</h1>

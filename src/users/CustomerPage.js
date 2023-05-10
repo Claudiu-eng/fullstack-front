@@ -106,6 +106,7 @@ const CustomerPage = () => {
   };
 
   useEffect(() => {
+    
     loadProducts();
   }, []);
 
@@ -130,6 +131,8 @@ const CustomerPage = () => {
   };
 
   const loadProducts = async () => {
+    setSelectedBrands([]);
+    setSelectedPrices([]);
     const result = await axios.get(
       "http://localhost:8070/product_page/see_products"
     );
@@ -143,12 +146,15 @@ const CustomerPage = () => {
     };
 
     setXMLButton(true);
-
+   
     const result = await axios.post(
       "http://localhost:8070/product_page/filter_products",
       data
     );
+   
     setProducts(result.data);
+    
+
   };
 
   const loadProductsSearched = async () => {
@@ -436,7 +442,46 @@ const CustomerPage = () => {
           </nav>
 
           {seeProducts ? (
+            
             <div>
+            <div className="input-container">
+                <label htmlFor="Name" className="form-label">
+                  Name or description
+                </label>
+                <input
+                  type={"text"}
+                  minLength="1"
+                  maxLength="100"
+                  required
+                  placeholder="Enter name or description"
+                  value={nameOrDescription}
+                  name="nameOrDescription"
+                  onChange={onInputChangeSearch}
+                ></input>
+                <br/>
+                <label htmlFor="Name" className="form-label">
+                  No of Stars
+                </label>
+                <input
+                  type={"text"}
+                  pattern="\d+$"
+                  title="Must contain only one digit"
+                  minLength="1"
+                  maxLength="1"
+                  required
+                  placeholder="Enter noOfStars"
+                  value={number}
+                  name="stars"
+                  onChange={onInputChangeReview}
+                ></input>
+              </div>
+              <textarea
+                value={text}
+                onChange={handleTextChange}
+                rows="4"
+                cols="50"
+              />
+
               <main role="main">
                 <section className="panel important">
                   <h1>The best customer ever!!</h1>
@@ -488,44 +533,7 @@ const CustomerPage = () => {
                   </table>
                 </section>
               </main>
-              <div>
-                <label htmlFor="Name" className="form-label">
-                  Name or description
-                </label>
-                <input
-                  type={"text"}
-                  minLength="1"
-                  maxLength="100"
-                  required
-                  placeholder="Enter name or description"
-                  value={nameOrDescription}
-                  name="nameOrDescription"
-                  onChange={onInputChangeSearch}
-                ></input>
-              </div>
-              <div>
-                <label htmlFor="Name" className="form-label">
-                  No of Stars
-                </label>
-                <input
-                  type={"text"}
-                  pattern="\d+$"
-                  title="Must contain only one digit"
-                  minLength="1"
-                  maxLength="1"
-                  required
-                  placeholder="Enter noOfStars"
-                  value={number}
-                  name="stars"
-                  onChange={onInputChangeReview}
-                ></input>
-              </div>
-              <textarea
-                value={text}
-                onChange={handleTextChange}
-                rows="4"
-                cols="50"
-              />
+              
             </div>
           ) : null}
 
