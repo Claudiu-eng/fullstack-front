@@ -11,6 +11,11 @@ html {
     box-sizing: inherit;
 }
 
+.container{
+
+    background-color: white;
+}
+
 #white1{
     background-color: white;
 }

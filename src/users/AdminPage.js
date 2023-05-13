@@ -26,21 +26,6 @@ const AdminPage = () => {
     userType: "guest",
   });
 
-  const [checkboxValues, setCheckboxValues] = useState({
-    Employee: false,
-    Customer: false,
-    Admin: false
-  });
-
-  // Function to reset checkboxes
-  const resetCheckboxes = () => {
-    setCheckboxValues({
-      Employee: false,
-      Customer: false,
-      Admin: false
-    });
-  };
-
   const [userConnected, setUserConected] = useState({
     id: 0,
     firstName: "",
@@ -66,8 +51,6 @@ const AdminPage = () => {
       email: emailSearched,
       roles: selectedRoles,
     };
-    console.log(selectedRoles);
-    console.log(emailSearched);
 
     setSelectedRoles([]);
  

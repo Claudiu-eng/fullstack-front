@@ -5,11 +5,16 @@ import { useNavigate } from "react-router-dom";
 import "./CustomerPage.css";
 import { saveAs } from "file-saver";
 
+import * as SockJS from "sockjs-client";
+import * as Stomp from "stompjs";
+
 const CustomerPage = () => {
   const [seeProducts, setSeeProducts] = useState(false);
   const [seeShoppingCart, setSeeShoppingCart] = useState(false);
   let navigate = useNavigate(0);
 
+  const [alert, setAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [seeOrders, setSeeOrders] = useState(false);
   const [seePersonalReviews, setSeePersonalReviews] = useState(false);
   const [seeReviewProduct, setSeeReviewProduct] = useState(false);
@@ -106,16 +111,17 @@ const CustomerPage = () => {
   };
 
   useEffect(() => {
-    
     loadProducts();
   }, []);
 
   const loadUser = () => {
+    
     const loggedInUser = localStorage.getItem("user");
     if (loggedInUser) {
       const foundUser = JSON.parse(loggedInUser);
       setUserConected(foundUser);
       console.log(foundUser);
+      connect(foundUser.email);
     }
   };
 
@@ -128,6 +134,7 @@ const CustomerPage = () => {
       "http://localhost:8070/client_page/see_orders/" + userConnected.email
     );
     setOrders(result.data);
+    console.log(result.data);
   };
 
   const loadProducts = async () => {
@@ -146,15 +153,12 @@ const CustomerPage = () => {
     };
 
     setXMLButton(true);
-   
+
     const result = await axios.post(
       "http://localhost:8070/product_page/filter_products",
       data
     );
-   
     setProducts(result.data);
-    
-
   };
 
   const loadProductsSearched = async () => {
@@ -313,8 +317,8 @@ const CustomerPage = () => {
   };
 
   const generateXML = async (e) => {
-    const response =await axios.post(
-      "http://localhost:8070/client_page/generate_xml" ,
+    const response = await axios.post(
+      "http://localhost:8070/client_page/generate_xml",
       products
     );
 
@@ -324,8 +328,28 @@ const CustomerPage = () => {
     setXMLButton(false);
   };
 
+  function connect(email) {
+    console.log("In Connect");
+    const URL = "http://localhost:8070/socket";
+    const websocket = new SockJS(URL);
+    const stompClient = Stomp.over(websocket);
+    console.log(email);
+    stompClient.connect({}, (frame) => {
+      stompClient.subscribe("/topic/socket/notifications/"+email, (notification) => {
+        let message = notification.body;
+        console.log("trimisss");
+        setAlert(true);
+        setErrorMessage(message);
+      });
+    });
+  }
+
+  const handleExitAlert = () => {
+    setAlert(false);
+  };
   return (
     <div>
+      
       <div id="white1">
         <header role="banner">
           <h1>Welcome</h1>
@@ -333,6 +357,24 @@ const CustomerPage = () => {
             <br />
             <li className="logout warn"></li>
           </ul>
+
+          <>
+        {alert ? (
+          <div className="alert alert-secondary" role="alert">
+            {errorMessage}
+            <button
+              type="button"
+              className="close"
+              data-dismiss="alert"
+              aria-label="Close"
+              onClick={handleExitAlert}
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        ) : null}
+      </>
+
         </header>
 
         <div>
@@ -442,9 +484,8 @@ const CustomerPage = () => {
           </nav>
 
           {seeProducts ? (
-            
             <div>
-            <div className="input-container">
+              <div className="input-container">
                 <label htmlFor="Name" className="form-label">
                   Name or description
                 </label>
@@ -458,7 +499,7 @@ const CustomerPage = () => {
                   name="nameOrDescription"
                   onChange={onInputChangeSearch}
                 ></input>
-                <br/>
+                <br />
                 <label htmlFor="Name" className="form-label">
                   No of Stars
                 </label>
@@ -533,7 +574,6 @@ const CustomerPage = () => {
                   </table>
                 </section>
               </main>
-              
             </div>
           ) : null}
 
@@ -592,15 +632,17 @@ const CustomerPage = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>IDX</th>
+                        <th>ID</th>
                         <th>Description</th>
+                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((product, index) => (
+                      {orders.map((order, index) => (
                         <tr key={index}>
-                          <td>{index + 1}</td>
-                          <td>{product.message}</td>
+                          <td>{order.id}</td>
+                          <td>{order.message}</td>
+                          <td>{order.orderStatus}</td>
                         </tr>
                       ))}
                     </tbody>
